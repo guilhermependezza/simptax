@@ -1,0 +1,72 @@
+/* Thumbnail Styles - 600x600 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.thumbnail {
+  width: 600px;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 40px;
+}
+
+.thumb-icon {
+  font-size: 120px;
+  margin-bottom: 30px;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+}
+
+.thumb-title {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 15px;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  color: white;
+}
+
+.thumb-subtitle {
+  font-size: 22px;
+  opacity: 0.8;
+  font-weight: 500;
+  color: white;
+}
+
+.thumb-price {
+  position: absolute;
+  bottom: 30px;
+  background: #10b981;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-size: 28px;
+  font-weight: 800;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.thumbnail::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -30%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
