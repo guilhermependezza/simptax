@@ -1,0 +1,39 @@
+{
+  "name": "simptax",
+  "compatibility_date": "2025-12-29",
+  "assets": {
+    "directory": "./",
+    "exclude": [
+      // Test files and directories
+      "tests",
+      "tests/**/*",
+      
+      // Node.js files
+      "node_modules",
+      "node_modules/**/*",
+      "package.json",
+      "package-lock.json",
+      
+      // Documentation
+      "README.md",
+      "ROADMAP.md",
+      "UPSELLING.md",
+      "MONETIZATION.md",
+      
+      // Digital products source files (PDFs, HTML templates)
+      // BUT keep products/images for product thumbnails
+      "products/pdf",
+      "products/pdf/**/*",
+      "products/pdf-ready",
+      "products/pdf-ready/**/*",
+      "products/images-ready",
+      "products/images-ready/**/*",
+      
+      // Build/utility scripts
+      "build.sh",
+      
+      // Wrangler config itself
+      "wrangler.jsonc"
+    ]
+  }
+}

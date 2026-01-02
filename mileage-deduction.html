@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mileage Deduction Calculator 2024 - IRS Mileage Rate</title>
+  <meta name="description" content="Calculate your business mileage deduction using the 2024 IRS standard mileage rate. Track miles for tax deductions.">
+  <link rel="canonical" href="https://simptax.io/mileage-deduction.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav><ul><li><a href="/">Home</a></li><li><a href="self-employment.html">1099</a></li><li><a href="quarterly-tax.html">Quarterly</a></li></ul></nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>🚗 Mileage Deduction Calculator</h1>
+        <p>Calculate business mileage deduction for 2024</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>🛣️ Mileage Details</h2>
+          <form id="calculator-form">
+            <div class="form-group">
+              <label for="businessMiles">Business Miles Driven</label>
+              <input type="number" id="businessMiles" value="10000" min="0" step="100">
+            </div>
+            <div class="form-group">
+              <label for="mileageRate">IRS Standard Rate ($/mile)</label>
+              <input type="number" id="mileageRate" value="0.67" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label for="taxBracket">Your Tax Bracket (%)</label>
+              <select id="taxBracket">
+                <option value="0.10">10%</option>
+                <option value="0.12">12%</option>
+                <option value="0.22" selected>22%</option>
+                <option value="0.24">24%</option>
+                <option value="0.32">32%</option>
+                <option value="0.35">35%</option>
+                <option value="0.37">37%</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="selfEmployed">Self-Employed?</label>
+              <select id="selfEmployed">
+                <option value="yes">Yes (includes SE tax savings)</option>
+                <option value="no">No (W-2 employee)</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>💰 Deduction Value</h2>
+          <div class="result-item">
+            <div class="result-label">Total Deduction</div>
+            <div class="result-value" id="totalDeduction">$6,700</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Federal Tax Savings</div>
+            <div class="result-value positive" id="federalSavings">$1,474</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">SE Tax Savings</div>
+            <div class="result-value positive" id="seSavings">$946</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Total Tax Savings</div>
+            <div class="result-value positive" id="totalSavings" style="font-size: 1.8rem;">$2,420</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Value Per Mile</div>
+            <div class="result-value" id="perMile">$0.24</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    function calculate() {
+      const miles = parseInput(document.getElementById('businessMiles').value, 0);
+      const rate = parseInput(document.getElementById('mileageRate').value, 0.67);
+      const taxBracket = parseInput(document.getElementById('taxBracket').value, 0.22);
+      const selfEmployed = document.getElementById('selfEmployed').value === 'yes';
+
+      const totalDeduction = miles * rate;
+      const federalSavings = totalDeduction * taxBracket;
+      const seSavings = selfEmployed ? totalDeduction * 0.1413 : 0; // 92.35% * 15.3%
+      const totalSavings = federalSavings + seSavings;
+      const perMile = miles > 0 ? totalSavings / miles : 0;
+
+      document.getElementById('totalDeduction').textContent = formatCurrency(totalDeduction);
+      document.getElementById('federalSavings').textContent = formatCurrency(federalSavings);
+      document.getElementById('seSavings').textContent = formatCurrency(seSavings);
+      document.getElementById('totalSavings').textContent = formatCurrency(totalSavings);
+      document.getElementById('perMile').textContent = '$' + perMile.toFixed(2);
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+

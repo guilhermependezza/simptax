@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quarterly Tax Calculator 2024 - Estimated Tax Payments</title>
+  <meta name="description" content="Calculate quarterly estimated tax payments for self-employed individuals. Avoid underpayment penalties.">
+  <link rel="canonical" href="https://simptax.io/quarterly-tax.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav><ul><li><a href="/">Home</a></li><li><a href="tax-bracket.html">Brackets</a></li><li><a href="self-employment.html">1099</a></li></ul></nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>📅 Quarterly Tax Calculator</h1>
+        <p>Calculate estimated tax payments for 2024</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>📊 Expected Income</h2>
+          <form id="calculator-form">
+            <div class="form-group">
+              <label for="expectedIncome">Expected Annual Self-Employment Income ($)</label>
+              <input type="number" id="expectedIncome" value="100000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+              <label for="expenses">Expected Business Expenses ($)</label>
+              <input type="number" id="expenses" value="15000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+              <label for="filingStatus">Filing Status</label>
+              <select id="filingStatus">
+                <option value="single">Single</option>
+                <option value="married">Married Filing Jointly</option>
+                <option value="head">Head of Household</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="alreadyPaid">Already Paid This Year ($)</label>
+              <input type="number" id="alreadyPaid" value="0" min="0" step="100">
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>💰 Quarterly Payments</h2>
+          <div class="result-item">
+            <div class="result-label">Total Annual Tax</div>
+            <div class="result-value" id="totalTax">$22,431</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Remaining Tax Due</div>
+            <div class="result-value" id="remainingTax">$22,431</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Quarterly Payment</div>
+            <div class="result-value" id="quarterlyPayment">$5,608</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Due Dates</div>
+            <div class="result-value" style="font-size: 1rem;">
+              Q1: Apr 15 | Q2: Jun 17<br>
+              Q3: Sep 16 | Q4: Jan 15
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    function calculate() {
+      const income = parseInput(document.getElementById('expectedIncome').value, 0);
+      const expenses = parseInput(document.getElementById('expenses').value, 0);
+      const filingStatus = document.getElementById('filingStatus').value;
+      const alreadyPaid = parseInput(document.getElementById('alreadyPaid').value, 0);
+
+      const netIncome = income - expenses;
+      const seTax = calculateSelfEmploymentTax(netIncome);
+      const deduction = STANDARD_DEDUCTIONS[filingStatus] + seTax.deductible;
+      const taxableIncome = Math.max(0, netIncome - deduction);
+      const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+      const totalTax = seTax.total + federalTax;
+      const remainingTax = Math.max(0, totalTax - alreadyPaid);
+      const quarterlyPayment = remainingTax / 4;
+
+      document.getElementById('totalTax').textContent = formatCurrency(totalTax);
+      document.getElementById('remainingTax').textContent = formatCurrency(remainingTax);
+      document.getElementById('quarterlyPayment').textContent = formatCurrency(quarterlyPayment);
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+

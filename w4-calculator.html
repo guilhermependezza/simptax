@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>W-4 Calculator 2024 - Tax Withholding Estimator</title>
+  <meta name="description" content="Calculate your W-4 withholding allowances. Optimize your paycheck to avoid owing taxes or getting too large a refund.">
+  <link rel="canonical" href="https://simptax.io/w4-calculator.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="tax-bracket.html">Brackets</a></li>
+            <li><a href="w4-calculator.html">W-4</a></li>
+            <li><a href="self-employment.html">1099</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>📝 W-4 Withholding Calculator</h1>
+        <p>Optimize your paycheck withholdings for 2024</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>💼 Employment Info</h2>
+          <form id="calculator-form">
+            <div class="form-group">
+              <label for="annualSalary">Annual Salary ($)</label>
+              <input type="number" id="annualSalary" value="75000" min="0" step="1000">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="payFrequency">Pay Frequency</label>
+                <select id="payFrequency">
+                  <option value="52">Weekly</option>
+                  <option value="26" selected>Bi-weekly</option>
+                  <option value="24">Semi-monthly</option>
+                  <option value="12">Monthly</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="filingStatus">Filing Status</label>
+                <select id="filingStatus">
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="head">Head of Household</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="currentWithholding">Current Federal Withholding/Paycheck ($)</label>
+              <input type="number" id="currentWithholding" value="400" min="0" step="10">
+            </div>
+            <div class="form-group">
+              <label for="otherIncome">Other Income (interest, dividends, etc.) ($)</label>
+              <input type="number" id="otherIncome" value="0" min="0" step="100">
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>💰 Withholding Analysis</h2>
+          <div class="result-item">
+            <div class="result-label">Annual Tax Liability</div>
+            <div class="result-value" id="taxLiability">$8,168</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Annual Withholding (current)</div>
+            <div class="result-value" id="annualWithholding">$10,400</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Projected Refund/Owed</div>
+            <div class="result-value positive" id="refundOwed">+$2,232 refund</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Recommended Per Paycheck</div>
+            <div class="result-value" id="recommendedWithholding">$314</div>
+            <div class="result-subtitle" id="withholdingChange">Reduce by $86/paycheck</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Extra Take-Home (annual)</div>
+            <div class="result-value positive" id="extraTakeHome">+$2,232/year</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+        </div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    function calculate() {
+      const salary = parseInput(document.getElementById('annualSalary').value, 0);
+      const payPeriods = parseInput(document.getElementById('payFrequency').value, 26);
+      const filingStatus = document.getElementById('filingStatus').value;
+      const currentWithholding = parseInput(document.getElementById('currentWithholding').value, 0);
+      const otherIncome = parseInput(document.getElementById('otherIncome').value, 0);
+
+      const totalIncome = salary + otherIncome;
+      const deduction = STANDARD_DEDUCTIONS[filingStatus];
+      const taxableIncome = Math.max(0, totalIncome - deduction);
+      const taxLiability = calculateFederalTax(taxableIncome, filingStatus);
+      
+      const annualWithholding = currentWithholding * payPeriods;
+      const refundOwed = annualWithholding - taxLiability;
+      const recommendedPerPaycheck = taxLiability / payPeriods;
+      const change = currentWithholding - recommendedPerPaycheck;
+
+      // Update display
+      document.getElementById('taxLiability').textContent = formatCurrency(taxLiability);
+      document.getElementById('annualWithholding').textContent = formatCurrency(annualWithholding);
+      
+      const refundEl = document.getElementById('refundOwed');
+      if (refundOwed >= 0) {
+        refundEl.textContent = '+' + formatCurrency(refundOwed) + ' refund';
+        refundEl.className = 'result-value positive';
+      } else {
+        refundEl.textContent = formatCurrency(Math.abs(refundOwed)) + ' owed';
+        refundEl.className = 'result-value negative';
+      }
+      
+      document.getElementById('recommendedWithholding').textContent = formatCurrency(recommendedPerPaycheck);
+      
+      const changeText = change > 0 
+        ? `Reduce by ${formatCurrency(change)}/paycheck`
+        : `Increase by ${formatCurrency(Math.abs(change))}/paycheck`;
+      document.getElementById('withholdingChange').textContent = changeText;
+      
+      document.getElementById('extraTakeHome').textContent = 
+        (refundOwed >= 0 ? '+' : '-') + formatCurrency(Math.abs(refundOwed)) + '/year';
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+

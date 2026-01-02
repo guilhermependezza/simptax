@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HSA Tax Savings Calculator 2024</title>
+  <meta name="description" content="Calculate tax savings from Health Savings Account contributions. See how much you can save on taxes with an HSA.">
+  <link rel="canonical" href="https://simptax.io/hsa-calculator.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav><ul><li><a href="/">Home</a></li><li><a href="tax-bracket.html">Brackets</a></li><li><a href="self-employment.html">1099</a></li></ul></nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>🏥 HSA Tax Savings Calculator</h1>
+        <p>Calculate tax benefits of Health Savings Account contributions</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>💊 HSA Details</h2>
+          <form id="calculator-form">
+            <div class="form-group">
+              <label for="grossIncome">Gross Annual Income ($)</label>
+              <input type="number" id="grossIncome" value="75000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+              <label for="coverage">Coverage Type</label>
+              <select id="coverage">
+                <option value="individual">Individual ($4,150 limit)</option>
+                <option value="family">Family ($8,300 limit)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="contribution">HSA Contribution ($)</label>
+              <input type="number" id="contribution" value="4150" min="0" step="100">
+            </div>
+            <div class="form-group">
+              <label for="age55">Age 55 or older?</label>
+              <select id="age55">
+                <option value="no">No</option>
+                <option value="yes">Yes (+$1,000 catch-up)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filingStatus">Filing Status</label>
+              <select id="filingStatus">
+                <option value="single">Single</option>
+                <option value="married">Married Filing Jointly</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>💰 Tax Savings</h2>
+          <div class="result-item">
+            <div class="result-label">Contribution Limit</div>
+            <div class="result-value" id="limit">$4,150</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Your Contribution</div>
+            <div class="result-value" id="yourContribution">$4,150</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Federal Tax Savings</div>
+            <div class="result-value positive" id="federalSavings">$913</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">FICA Tax Savings (if through payroll)</div>
+            <div class="result-value positive" id="ficaSavings">$318</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Total Annual Tax Savings</div>
+            <div class="result-value positive" id="totalSavings" style="font-size: 1.8rem;">$1,231</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    const HSA_LIMITS = { individual: 4150, family: 8300 };
+    const CATCH_UP = 1000;
+
+    function calculate() {
+      const grossIncome = parseInput(document.getElementById('grossIncome').value, 0);
+      const coverage = document.getElementById('coverage').value;
+      const contribution = parseInput(document.getElementById('contribution').value, 0);
+      const age55 = document.getElementById('age55').value === 'yes';
+      const filingStatus = document.getElementById('filingStatus').value;
+
+      const limit = HSA_LIMITS[coverage] + (age55 ? CATCH_UP : 0);
+      const actualContribution = Math.min(contribution, limit);
+      
+      const deduction = STANDARD_DEDUCTIONS[filingStatus];
+      const taxableWithout = Math.max(0, grossIncome - deduction);
+      const taxableWith = Math.max(0, grossIncome - deduction - actualContribution);
+      
+      const taxWithout = calculateFederalTax(taxableWithout, filingStatus);
+      const taxWith = calculateFederalTax(taxableWith, filingStatus);
+      const federalSavings = taxWithout - taxWith;
+      
+      // FICA savings (7.65%) - only if contributed through payroll
+      const ficaSavings = actualContribution * 0.0765;
+      const totalSavings = federalSavings + ficaSavings;
+
+      document.getElementById('limit').textContent = formatCurrency(limit);
+      document.getElementById('yourContribution').textContent = formatCurrency(actualContribution);
+      document.getElementById('federalSavings').textContent = formatCurrency(federalSavings);
+      document.getElementById('ficaSavings').textContent = formatCurrency(ficaSavings);
+      document.getElementById('totalSavings').textContent = formatCurrency(totalSavings);
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+

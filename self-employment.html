@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self-Employment Tax Calculator 2024 - 1099 Taxes</title>
+  <meta name="description" content="Calculate self-employment tax for freelancers and contractors. Estimate Social Security, Medicare, and federal income taxes.">
+  <link rel="canonical" href="https://simptax.io/self-employment.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="tax-bracket.html">Brackets</a></li>
+            <li><a href="w4-calculator.html">W-4</a></li>
+            <li><a href="self-employment.html">1099</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>💼 Self-Employment Tax Calculator</h1>
+        <p>Calculate 1099/freelance taxes for 2024</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>📊 Business Income</h2>
+          <form id="calculator-form">
+            <div class="form-group">
+              <label for="grossIncome">Gross Self-Employment Income ($)</label>
+              <input type="number" id="grossIncome" value="100000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+              <label for="expenses">Business Expenses ($)</label>
+              <input type="number" id="expenses" value="15000" min="0" step="100">
+            </div>
+            <div class="form-group">
+              <label for="filingStatus">Filing Status</label>
+              <select id="filingStatus">
+                <option value="single">Single</option>
+                <option value="married">Married Filing Jointly</option>
+                <option value="head">Head of Household</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="otherIncome">Other Income (W-2, etc.) ($)</label>
+              <input type="number" id="otherIncome" value="0" min="0" step="1000">
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>🧾 Tax Breakdown</h2>
+          <div class="result-item">
+            <div class="result-label">Net Self-Employment Income</div>
+            <div class="result-value" id="netIncome">$85,000</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Self-Employment Tax</div>
+            <div class="result-value negative" id="seTax">$12,013</div>
+            <div class="result-subtitle">Social Security: $10,562 | Medicare: $1,451</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">SE Tax Deduction (50%)</div>
+            <div class="result-value positive" id="seDeduction">$6,007</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Federal Income Tax</div>
+            <div class="result-value negative" id="federalTax">$10,418</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Total Tax Burden</div>
+            <div class="result-value negative" id="totalTax">$22,431</div>
+            <div class="result-subtitle" id="effectiveRate">Effective rate: 26.4%</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Take-Home (after taxes)</div>
+            <div class="result-value positive" id="takeHome">$62,569</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+        </div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    function calculate() {
+      const grossIncome = parseInput(document.getElementById('grossIncome').value, 0);
+      const expenses = parseInput(document.getElementById('expenses').value, 0);
+      const filingStatus = document.getElementById('filingStatus').value;
+      const otherIncome = parseInput(document.getElementById('otherIncome').value, 0);
+
+      const netIncome = grossIncome - expenses;
+      
+      // Calculate SE tax
+      const seTax = calculateSelfEmploymentTax(netIncome);
+      
+      // Calculate federal tax (with SE deduction)
+      const totalIncome = netIncome + otherIncome;
+      const deduction = STANDARD_DEDUCTIONS[filingStatus] + seTax.deductible;
+      const taxableIncome = Math.max(0, totalIncome - deduction);
+      const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+      
+      const totalTax = seTax.total + federalTax;
+      const takeHome = netIncome - totalTax;
+      const effectiveRate = netIncome > 0 ? (totalTax / netIncome) * 100 : 0;
+
+      // Update display
+      document.getElementById('netIncome').textContent = formatCurrency(netIncome);
+      document.getElementById('seTax').textContent = formatCurrency(seTax.total);
+      document.getElementById('seDeduction').textContent = formatCurrency(seTax.deductible);
+      document.getElementById('federalTax').textContent = formatCurrency(federalTax);
+      document.getElementById('totalTax').textContent = formatCurrency(totalTax);
+      document.getElementById('effectiveRate').textContent = `Effective rate: ${formatPercent(effectiveRate)}`;
+      document.getElementById('takeHome').textContent = formatCurrency(takeHome);
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Bracket Calculator 2024 - Federal Income Tax</title>
+  <meta name="description" content="Calculate your 2024 federal tax bracket and estimate your income tax. See marginal and effective tax rates.">
+  <link rel="canonical" href="https://simptax.io/tax-bracket.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="tax-bracket.html">Brackets</a></li>
+            <li><a href="w4-calculator.html">W-4</a></li>
+            <li><a href="self-employment.html">1099</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>📊 Tax Bracket Calculator 2024</h1>
+        <p>Calculate your federal income tax and find your tax bracket</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>💵 Income Details</h2>
+          <form id="calculator-form">
+            <div class="form-group">
+              <label for="grossIncome">Gross Annual Income ($)</label>
+              <input type="number" id="grossIncome" value="75000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+              <label for="filingStatus">Filing Status</label>
+              <select id="filingStatus">
+                <option value="single">Single</option>
+                <option value="married">Married Filing Jointly</option>
+                <option value="head">Head of Household</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="deductions">Deductions</label>
+              <select id="deductions">
+                <option value="standard">Standard Deduction</option>
+                <option value="itemized">Itemized Deductions</option>
+              </select>
+            </div>
+            <div class="form-group" id="itemizedGroup" style="display: none;">
+              <label for="itemizedAmount">Itemized Deduction Amount ($)</label>
+              <input type="number" id="itemizedAmount" value="20000" min="0" step="100">
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>📈 Tax Calculation</h2>
+          <div class="result-item">
+            <div class="result-label">Standard Deduction</div>
+            <div class="result-value" id="deductionAmount">$14,600</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Taxable Income</div>
+            <div class="result-value" id="taxableIncome">$60,400</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Marginal Tax Bracket</div>
+            <div class="result-value" id="marginalBracket">22%</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Federal Tax Owed</div>
+            <div class="result-value negative" id="federalTax">$8,168</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Effective Tax Rate</div>
+            <div class="result-value" id="effectiveRate">10.9%</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">After-Tax Income</div>
+            <div class="result-value positive" id="afterTax">$66,832</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+        </div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    document.getElementById('deductions').addEventListener('change', function() {
+      document.getElementById('itemizedGroup').style.display = 
+        this.value === 'itemized' ? 'block' : 'none';
+      calculate();
+    });
+
+    function calculate() {
+      const grossIncome = parseInput(document.getElementById('grossIncome').value, 0);
+      const filingStatus = document.getElementById('filingStatus').value;
+      const deductionType = document.getElementById('deductions').value;
+      
+      // Get deduction amount
+      let deduction;
+      if (deductionType === 'standard') {
+        deduction = STANDARD_DEDUCTIONS[filingStatus];
+      } else {
+        deduction = parseInput(document.getElementById('itemizedAmount').value, 0);
+      }
+      
+      // Calculate taxable income
+      const taxableIncome = Math.max(0, grossIncome - deduction);
+      
+      // Calculate federal tax
+      const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+      const marginalRate = getMarginalRate(taxableIncome, filingStatus);
+      const effectiveRate = grossIncome > 0 ? (federalTax / grossIncome) * 100 : 0;
+      const afterTax = grossIncome - federalTax;
+
+      // Update display
+      document.getElementById('deductionAmount').textContent = formatCurrency(deduction);
+      document.getElementById('taxableIncome').textContent = formatCurrency(taxableIncome);
+      document.getElementById('marginalBracket').textContent = formatPercent(marginalRate * 100, 0);
+      document.getElementById('federalTax').textContent = formatCurrency(federalTax);
+      document.getElementById('effectiveRate').textContent = formatPercent(effectiveRate);
+      document.getElementById('afterTax').textContent = formatCurrency(afterTax);
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+

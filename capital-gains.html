@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capital Gains Tax Calculator 2024 - Stock & Investment Taxes</title>
+  <meta name="description" content="Calculate capital gains tax on stocks, crypto, and investments. Compare short-term vs long-term tax rates.">
+  <link rel="canonical" href="https://simptax.io/capital-gains.html">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><span class="logo-icon">📋</span> TaxTools</a>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="tax-bracket.html">Brackets</a></li>
+            <li><a href="w4-calculator.html">W-4</a></li>
+            <li><a href="self-employment.html">1099</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="calculator-page">
+    <div class="container">
+      <div class="calculator-header">
+        <h1>📈 Capital Gains Tax Calculator</h1>
+        <p>Estimate taxes on investment gains for 2024</p>
+      </div>
+
+      <div class="calculator-container">
+        <div class="input-section">
+          <h2>💹 Investment Details</h2>
+          <form id="calculator-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="purchasePrice">Purchase Price ($)</label>
+                <input type="number" id="purchasePrice" value="10000" min="0" step="100">
+              </div>
+              <div class="form-group">
+                <label for="salePrice">Sale Price ($)</label>
+                <input type="number" id="salePrice" value="25000" min="0" step="100">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="holdingPeriod">Holding Period</label>
+              <select id="holdingPeriod">
+                <option value="short">Short-term (≤ 1 year)</option>
+                <option value="long">Long-term (> 1 year)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="taxableIncome">Annual Taxable Income ($)</label>
+              <input type="number" id="taxableIncome" value="75000" min="0" step="1000">
+            </div>
+            <div class="form-group">
+              <label for="filingStatus">Filing Status</label>
+              <select id="filingStatus">
+                <option value="single">Single</option>
+                <option value="married">Married Filing Jointly</option>
+                <option value="head">Head of Household</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <div class="result-section">
+          <h2>🧾 Tax Calculation</h2>
+          <div class="result-item">
+            <div class="result-label">Capital Gain</div>
+            <div class="result-value positive" id="capitalGain">$15,000</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Tax Rate</div>
+            <div class="result-value" id="taxRate">22%</div>
+            <div class="result-subtitle" id="rateType">Short-term (ordinary income)</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Capital Gains Tax</div>
+            <div class="result-value negative" id="taxOwed">$3,300</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Net Profit After Tax</div>
+            <div class="result-value positive" id="netProfit">$11,700</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">If Long-Term (savings)</div>
+            <div class="result-value positive" id="longTermSavings">Save $750</div>
+            <div class="result-subtitle" id="longTermRate">15% long-term rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+        </div>
+        <p class="copyright">© 2024 TaxTools. Not tax advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-consent" class="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to improve your experience.</p>
+      <div class="cookie-buttons">
+        <button onclick="acceptCookies()" class="btn btn-primary">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-secondary">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="analytics.js"></script>
+  <script>
+    const LONG_TERM_RATES = {
+      single: [
+        { max: 47025, rate: 0 },
+        { max: 518900, rate: 0.15 },
+        { max: Infinity, rate: 0.20 }
+      ],
+      married: [
+        { max: 94050, rate: 0 },
+        { max: 583750, rate: 0.15 },
+        { max: Infinity, rate: 0.20 }
+      ],
+      head: [
+        { max: 63000, rate: 0 },
+        { max: 551350, rate: 0.15 },
+        { max: Infinity, rate: 0.20 }
+      ]
+    };
+
+    function getLongTermRate(income, filingStatus) {
+      const brackets = LONG_TERM_RATES[filingStatus];
+      for (const b of brackets) {
+        if (income <= b.max) return b.rate;
+      }
+      return 0.20;
+    }
+
+    function calculate() {
+      const purchasePrice = parseInput(document.getElementById('purchasePrice').value, 0);
+      const salePrice = parseInput(document.getElementById('salePrice').value, 0);
+      const holdingPeriod = document.getElementById('holdingPeriod').value;
+      const taxableIncome = parseInput(document.getElementById('taxableIncome').value, 0);
+      const filingStatus = document.getElementById('filingStatus').value;
+
+      const capitalGain = salePrice - purchasePrice;
+      const totalIncome = taxableIncome + Math.max(0, capitalGain);
+      
+      let taxRate, taxOwed;
+      if (holdingPeriod === 'short') {
+        taxRate = getMarginalRate(totalIncome, filingStatus);
+        taxOwed = capitalGain > 0 ? capitalGain * taxRate : 0;
+      } else {
+        taxRate = getLongTermRate(totalIncome, filingStatus);
+        taxOwed = capitalGain > 0 ? capitalGain * taxRate : 0;
+      }
+      
+      const netProfit = capitalGain - taxOwed;
+      
+      // Calculate long-term comparison
+      const longTermRate = getLongTermRate(totalIncome, filingStatus);
+      const longTermTax = capitalGain > 0 ? capitalGain * longTermRate : 0;
+      const savings = taxOwed - longTermTax;
+
+      // Update display
+      const gainEl = document.getElementById('capitalGain');
+      gainEl.textContent = (capitalGain >= 0 ? '+' : '') + formatCurrency(capitalGain);
+      gainEl.className = 'result-value ' + (capitalGain >= 0 ? 'positive' : 'negative');
+      
+      document.getElementById('taxRate').textContent = formatPercent(taxRate * 100, 0);
+      document.getElementById('rateType').textContent = holdingPeriod === 'short' 
+        ? 'Short-term (ordinary income)' 
+        : 'Long-term (preferential rate)';
+      
+      document.getElementById('taxOwed').textContent = formatCurrency(taxOwed);
+      document.getElementById('netProfit').textContent = formatCurrency(netProfit);
+      
+      if (holdingPeriod === 'short' && savings > 0) {
+        document.getElementById('longTermSavings').textContent = `Save ${formatCurrency(savings)}`;
+        document.getElementById('longTermRate').textContent = `${formatPercent(longTermRate * 100, 0)} long-term rate`;
+      } else {
+        document.getElementById('longTermSavings').textContent = 'Already using long-term rate';
+        document.getElementById('longTermRate').textContent = '';
+      }
+    }
+
+    setupAutoCalculate('calculator-form', calculate);
+  </script>
+</body>
+</html>
+
